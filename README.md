@@ -1,60 +1,98 @@
-<img width="960" height="540" alt="image-blaster-1" src="https://github.com/user-attachments/assets/d294e420-eb48-4f00-b6a8-13005442d1a8" />
+# Image Blaster · ChatGPT edition
 
-## `image-blaster`
-Creates 3D environments, SFX, and meshes from a single image using Claude skills, World Labs, and FAL. 
+A local image-to-world workspace powered by **Sign in with ChatGPT and Codex
+app-server**, with the original Image Blaster 3D viewer and generation pipeline.
+This is a fork of [neilsonnn/image-blaster](https://github.com/neilsonnn/image-blaster),
+not an official OpenAI product. The original MIT license and attribution remain.
 
-Can take you from an image to a fully meshed 3D environment in < 5 minutes, great for jumpstarting 3D work. Go full blast.
+**Implementation preview:** local tests cover OAuth validation, refresh, account
+isolation, app-server messages, approvals, and HTTP security. A real sign-in and
+paid end-to-end generation still require validation on an eligible account.
 
+## Start locally
 
-## Quickstart
+Requirements: Node.js **22+**, a current **Codex CLI** supporting `app-server`, and
+the existing viewer dependencies. The new control panel has no npm dependencies.
 
-1. Open a Terminal, enter `git clone https://github.com/neilsonnn/image-blaster`
-2. Enter the directory with `cd image-blaster`
-3. Run `claude` (install with `curl -fsSL https://claude.ai/install.sh | bash`)
-4. Say hello to Claude, and give them your API key for [World Labs](https://platform.worldlabs.ai/) and [FAL](https://fal.ai/).
-5. Put an image into `input/` directory and ask Claude to `blast it and confirm each step with me`.
+```sh
+git clone https://github.com/ashtonbannister/image-blaster.git
+cd image-blaster
+git switch codex/chatgpt-login
+npm install -g @openai/codex
+# Install the original viewer dependencies (Bun's existing workspace):
+bun install
+# Or, without Bun: npm install --prefix app --workspaces=false
+npm start
+```
 
-### Description
+Open the printed **http://127.0.0.1:3210** URL in a browser on the same computer.
+Use **Sign in with ChatGPT**, review the consent screen, then choose an available
+model. No OpenAI API key or separate Codex login is needed for this path. Account
+eligibility and model availability are determined by OpenAI, not this app.
 
-By default `image-blaster` will use your input image to create:
+Attach a PNG, JPEG, or WebP image, choose a world name, and start with:
 
-1. 3D models (`.glb`, `.obj`) of all *dynamic* objects
-2. Gaussian splat (`.spz`) of the *static* environment,
-3. Ambient looping sound and object specific physics SFX (`.mp3`)
+> Analyze this image and propose the objects and generation stages. Do not make
+> any paid generation requests yet.
 
-### Extensions
+Review the agent's plan and one-time command approvals. Once assets exist, choose
+**Load world** or **Open viewer**. The original viewer normally runs on port 5173.
+Existing `bun run dev`, `build`, `test`, and `typecheck` commands remain unchanged.
 
-You can embed `image-blaster` under the assets of *any game engine, DCC software, or web app*.
+### Provider keys and costs
 
-1. Unity, Unreal, or Godot game engine
-2. Blender, 3DS Max, or Maya or other DCC software
-3. Three.js web app or Electron app
+Copy `.env.example` to `.env` and enter your own `WORLD_LABS_API_KEY` and `FAL_KEY`
+locally before requesting provider generation. Never paste credentials into the
+chat. Existing `.env` files are loaded by the launcher.
 
-## Advanced
+| Capability | Service / billing |
+| --- | --- |
+| Agent reasoning, image understanding, and tool orchestration | Your authorized ChatGPT plan and limits |
+| Static environment, splat, collision mesh | World Labs |
+| Reference editing and object meshes | FAL providers |
+| Ambient audio and object sounds | FAL / ElevenLabs |
+| Viewer and project files | Local computer |
 
-IMAGE-BLASTER uses a few generation models:
+ChatGPT sign-in does **not** cover external generation charges. Hosted image
+generation is not used through this token-sharing integration. The existing
+image-edit providers remain separate. Set provider-side spending limits too:
+command approvals are not hard currency budgets. Stopping the local agent cannot
+undo charges or necessarily cancel cloud jobs already submitted.
 
-- `marble-1.1` - World Labs Marble model creates the explorable environment.
-- `nano-banana` - default image edit preference for source cleanup, clean plates, and object reference images.
-- `gpt-image-2` - alternate image edit provider when the edit skill is asked to prefer it.
-- `hunyuan-3d` - Hunyuan 3D model creates 3D object models through FAL.
-- `elevenlabs-sfx` - ElevenLabs sound effects model creates ambient and object-specific sounds.
+## What changed
 
-3D model creation supports these Hunyuan parameters:
+- Browser control panel: account picker, sign-in/out, welcome disclosure, model
+  catalog, image upload, streaming chat, per-action approvals, and stop.
+- Standards-based PKCE/OIDC login using OpenAI's documented open-source flow.
+- Separate credential records and Codex homes; no reuse of `~/.codex/auth.json`.
+- Original React / Three.js / Spark / Rapier viewer embedded alongside the agent.
+- New Codex `AGENTS.md` and `.agents/skills/image-blast/SKILL.md` workflow.
+- Original `.claude/scripts/` paths retained as reusable Node provider adapters.
+  Claude itself is not launched or required by the ChatGPT path.
 
-- `--face-count <40000-1500000>`: target face count. IMAGE-BLASTER defaults to `50000`; Hunyuan's API default is `500000`.
-- `--enable-pbr true|false`: enable PBR material generation. Defaults to `true`.
-- `--generate-type Normal|LowPoly|Geometry`: `Normal` creates a textured model, `LowPoly` applies polygon reduction, and `Geometry` creates a white geometry-only model. Defaults to `Normal`.
-- `--polygon-type triangle|quadrilateral`: polygon type for `LowPoly`. Defaults to `triangle`.
+Objects remain `.glb` / `.obj`; environments use `.spz` with collider geometry;
+audio remains `.mp3`. Projects and indexed artifact metadata stay in `worlds/`.
+Original provider options (Hunyuan face count/PBR/generation type, optional Meshy,
+image-edit selection, and audio processing) remain in the existing scripts.
 
-### Examples
+## Configuration and testing
 
-- Video game level concepts? `IMAGE-BLAST` it.
-- Your childhood bedroom? `IMAGE-BLAST` it.
-- Need an environment for a robot? `IMAGE-BLAST` it.
-- A film location scout? `IMAGE-BLAST` it.
-- An architectural rendering? `IMAGE-BLAST` it.
+```sh
+npm run test:chatgpt
+node --check chatgpt/server.mjs
+```
 
-### Development
+These tests use local mocks; they do not contact OpenAI, FAL, or World Labs and do
+not spend credits. They do not substitute for the live acceptance checklist in
+[docs/chatgpt-login.md](docs/chatgpt-login.md).
 
-- remove `/app` from the `.claudeignore` file to give Claude the ability to change the React viewer.
+Optional environment variables: `IMAGE_BLASTER_PORT` (default 3210),
+`IMAGE_BLASTER_VIEWER_PORT` (5173), `IMAGE_BLASTER_NO_VIEWER=1`, and
+`IMAGE_BLASTER_CODEX` (a native executable or Codex's `bin/codex.js` path).
+Windows npm installations are detected through their JavaScript entry point to
+avoid a shell. Native Windows and macOS remain unverified; WSL/Linux is the first
+manual validation target. Audio postprocessing also needs ffmpeg and ffprobe.
+
+**Local single-user app only.** Do not deploy the development servers publicly,
+expose them on a LAN, or mount untrusted workspaces. See the security boundaries,
+storage details, and troubleshooting in [the integration notes](docs/chatgpt-login.md).
