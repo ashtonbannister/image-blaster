@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="image-blaster-token" content="@@CSRF@@">
+  <meta name="viewer-origin" content="@@VIEWER@@">
+  <title>Image Blaster · ChatGPT</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/ui.mjs"></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="mark" aria-hidden="true">IB</span><div><strong>IMAGE BLASTER</strong><span class="subtitle">Local image-to-world workspace</span></div></div>
+  <div class="account-controls">
+    <label class="sr-only" for="account">ChatGPT account</label>
+    <select id="account"><option value="">Add a ChatGPT account</option></select>
+    <button id="login" class="primary">Sign in with ChatGPT</button>
+    <button id="cancel-login" hidden>Cancel sign-in</button>
+    <button id="logout" hidden>Sign out</button>
+  </div>
+</header>
+<div id="notice" role="status" hidden></div>
+<nav class="mobile-tabs" aria-label="Workspace view"><button id="chat-tab" aria-pressed="true">Agent</button><button id="viewer-tab" aria-pressed="false">3D viewer</button></nav>
+<main>
+  <section class="agent-panel" aria-label="ChatGPT agent">
+    <div class="section-heading"><div><span class="eyebrow">WORKSPACE / 01</span><h1>From reference to world.</h1></div><span id="run-state" class="badge">Disconnected</span></div>
+    <div class="configuration">
+      <label>World name<input id="world" value="my-world" maxlength="64" pattern="[a-z0-9][a-z0-9-]{0,63}" autocomplete="off" spellcheck="false"></label>
+      <label>ChatGPT model<select id="model" disabled><option value="">Sign in to load models</option></select></label>
+      <button id="refresh-models" title="Refresh available models" disabled>Refresh models</button>
+    </div>
+    <div id="messages" class="messages" role="log" aria-label="Conversation" aria-relevant="additions text">
+      <div id="intro" class="intro"><span class="eyebrow">START WITH AN IMAGE</span><h2>One scene. Separate assets.</h2><p>Attach a reference, describe what to build, and review the agent’s plan before generation.</p><div class="pipeline"><span>Analyze</span><span>Clean plate</span><span>World + objects</span><span>Sound</span></div><p class="small">Your existing worlds and viewer remain available without signing in.</p></div>
+    </div>
+    <section id="approvals" class="approvals" aria-label="Pending approvals" hidden></section>
+    <form id="composer">
+      <div class="composer-heading"><span id="plan-status">Not connected to a ChatGPT plan</span><a href="https://chatgpt.com/settings/usage" target="_blank" rel="noopener noreferrer">Manage usage ↗</a></div>
+      <label class="sr-only" for="prompt">Message to the agent</label>
+      <textarea id="prompt" rows="3" maxlength="30000" placeholder="Analyze this image and propose objects to create. Do not generate anything paid yet." required></textarea>
+      <div id="attachments" class="attachments" aria-label="Attached images"></div>
+      <div class="composer-actions"><label class="file-button">Attach image<input id="files" type="file" accept="image/png,image/jpeg,image/webp" multiple></label><label class="fresh"><input id="fresh" type="checkbox"> New conversation</label><button id="stop" type="button" hidden>Stop</button><button id="send" class="primary" disabled>Send</button></div>
+      <p class="cost-note">ChatGPT plan: agent reasoning. World Labs + FAL: separate paid generation. Review every command before approving.</p>
+    </form>
+  </section>
+  <section class="viewer-panel" aria-label="3D viewer">
+    <div class="viewer-toolbar"><div><span class="eyebrow">WORKSPACE / 02</span><h2>World preview</h2></div><div><button id="load-viewer">Load world</button><a id="open-viewer" href="@@VIEWER@@" target="_blank" rel="noopener noreferrer">Open viewer ↗</a></div></div>
+    <div id="viewer-placeholder" class="viewer-placeholder"><div class="wire-cube" aria-hidden="true">◇</div><h3>The original 3D viewer lives here.</h3><p id="viewer-message">Checking the local viewer…</p><code>worlds/&lt;world-name&gt;/</code></div>
+    <iframe id="viewer" title="Image Blaster 3D world viewer" sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-downloads" allow="fullscreen" hidden></iframe>
+    <footer><span id="provider-status">Provider keys are configured in your local .env file.</span><span>LOCAL ONLY</span></footer>
+  </section>
+</main>
+<dialog id="welcome" aria-labelledby="welcome-title"><span class="eyebrow">CHATGPT CONNECTED</span><h2 id="welcome-title">Use your ChatGPT plan here.</h2><p>Agent requests in Image Blaster use your eligible ChatGPT plan and its limits. Set and review app limits in ChatGPT’s usage settings.</p><p>World Labs, FAL, image editing, and audio generation are billed separately by their providers. Signing in does not make those services free.</p><p>This local agent can run approved commands and change project files. Review commands carefully. Stop interrupts local work; it cannot undo an already submitted provider charge.</p><div class="dialog-actions"><a href="https://chatgpt.com/settings/usage" target="_blank" rel="noopener noreferrer">Manage usage ↗</a><button id="welcome-dismiss" class="primary">Got it</button></div></dialog>
+</body>
+</html>

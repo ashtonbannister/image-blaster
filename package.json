@@ -5,6 +5,9 @@
     "app"
   ],
   "scripts": {
+    "start": "node chatgpt/server.mjs",
+    "dev:chatgpt": "node chatgpt/server.mjs",
+    "test:chatgpt": "node --test chatgpt/test/*.test.mjs",
     "dev": "bun --cwd=app run dev",
     "build": "bun --cwd=app run build",
     "preview": "bun --cwd=app run preview",
